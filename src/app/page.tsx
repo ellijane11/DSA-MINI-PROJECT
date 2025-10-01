@@ -1,17 +1,28 @@
 import React from "react";
-import Link from "next/link";
+import Link from "next/link"; // ✅ This line is required
 
 export default function HomePage() {
     return (
-        <div className="min-h-screen bg-[#01003d] text-white flex flex-col items-center justify-center">
-            <h1 className="text-5xl font-bold mb-6">Ride It</h1>
+        <div
+            className="min-h-screen text-white flex flex-col items-center justify-center"
+            style={{
+                backgroundImage:
+                    "linear-gradient(to right, var(--btn-grad-start), var(--btn-grad-mid), var(--btn-grad-end))",
+            }}
+        >
+            <h1 className="text-[100px] font-bold mb-10">Ride It</h1>
             <Link
                 href="/choose"
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200"
+                className="bg-purple-400 text-white px-12 py-6 rounded-2xl shadow-xl hover:bg-purple-500 transition-colors duration-200 text-2xl font-[cursive] w-[250px] text-center"
+
+
             >
                 <span>Get Started</span>
             </Link>
+
         </div>
     );
 }
+
+
 
