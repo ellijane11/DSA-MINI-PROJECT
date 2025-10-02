@@ -30,7 +30,7 @@ export default function BrowsePage() {
             <h1 className="text-3xl font-bold mb-4">🔍 Browse Rides</h1>
             <p>See all available rides and drivers here.</p>
             <nav className="fixed bottom-0 left-0 w-full flex justify-around items-center py-4 z-50 bg-white/10 backdrop-blur-sm shadow-2xl rounded-t-3xl border-t-2 border-white/30">
-                <NavLink href="/passenger" tooltip="Home">
+                <NavLink href="/driver" tooltip="Home">
                     &lt;
                 </NavLink>
                 <NavLink href="/requests" tooltip="Requests">
