@@ -89,7 +89,7 @@ export default function PassengerParcelPage() {
             style={mainGradientStyle}
         >
             <h1 className="text-4xl font-extrabold mb-10 text-white drop-shadow-lg tracking-wider">
-                Passenger Parcel
+              Parcel
             </h1>
 
             <div className="flex flex-col gap-10 w-[240px] text-center">
@@ -125,7 +125,7 @@ export default function PassengerParcelPage() {
 
             {/* --- Bottom Nav --- */}
             <nav className="fixed bottom-0 left-0 w-full flex justify-around items-center py-4 z-50 bg-white/10 backdrop-blur-sm shadow-2xl rounded-t-3xl border-t-2 border-white/30">
-                <NavLink href="/passenger" tooltip="Home">
+                <NavLink href="/driver" tooltip="Home">
                     &lt;
                 </NavLink>
                 <NavLink href="/requests" tooltip="Requests">
