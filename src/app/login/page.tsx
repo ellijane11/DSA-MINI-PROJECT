@@ -40,7 +40,7 @@ export default function AuthPage() {
             <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
                 {/* Title */}
                 <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-                    {isLogin ? "Driver Login" : "Driver Sign Up"}
+                    {isLogin ? " Login" : " Sign Up"}
                 </h2>
 
                 {/* Form */}
