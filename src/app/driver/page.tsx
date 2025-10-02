@@ -1,79 +1,89 @@
+"use client";
+
 import React from "react";
+import { useRouter } from "next/navigation";
 
-// The styling is adjusted to display the four buttons in a 2x2 grid layout using Tailwind's grid utilities.
-// FIX: Replaced 'next/link' with standard '<a>' tags to resolve compilation error in the sandbox environment.
 export default function DriverDashboard() {
+    const router = useRouter();
+
     return (
+        <div className="min-h-screen flex flex-col justify-between bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300 relative">
 
-        <div className="min-h-screen text-white flex flex-col items-center justify-center"
-             style={{ backgroundImage: "linear-gradient(to right, var(--btn-grad-start), var(--btn-grad-mid), var(--btn-grad-end))",
-             }}>
-            <h1 className="text-4xl font-extrabold mb-10 text-center tracking-tight">
-                🚗 Driver Dashboard
-            </h1>
+            {/* Back button */}
+            <button
+                onClick={() => router.push("/choose")}
+                className="absolute top-6 left-6 z-30 p-2 rounded-full bg-black bg-opacity-40 text-white hover:bg-opacity-60 transition"
+                aria-label="Go back to role selection"
+            >
+                ←
+            </button>
 
-            {/* Grid Container for 2x2 layout */}
-            <div className="grid grid-cols-2 gap-6 max-w-lg w-full">
+            {/* Top Heading */}
+            <header className="p-6 text-center">
+                <h1 className="text-4xl font-extrabold text-white drop-shadow-lg">
+                    Driver Dashboard
+                </h1>
+            </header>
 
-                {/* 1. Manage Rides */}
-                <a href="/driver/manage" className="col-span-1">
-                    <button
-                        className="w-full h-32 py-4 px-3 rounded-xl bg-white text-[#01003d] font-bold text-lg shadow-2xl hover:bg-gray-100 transition duration-200 transform hover:scale-[1.03] flex flex-col items-center justify-center"
-                    >
-                        {/* Icon for Manage Rides (Car/Route) */}
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mb-2" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M17 18a2 2 0 0 0 2-2V9.5a2.5 2.5 0 0 0-2.5-2.5h-5A2.5 2.5 0 0 0 7 9.5V16a2 2 0 0 0 2 2h8zm-2 2H9a4 4 0 0 1-4-4v-6a4.5 4.5 0 0 1 4.5-4.5h5A4.5 4.5 0 0 1 19 10v6a4 4 0 0 1-4 4zM4 14H3V7h1V14zM20 7v7h1V7h-1z"/>
-                            <path d="M12.5 10a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
-                        </svg>
-                        Manage Rides
+            {/* Main content with glassmorphism */}
+            <div className="flex-grow flex items-center justify-center p-6">
+                <div className="grid grid-cols-2 gap-6 bg-white/20 backdrop-blur-md rounded-2xl shadow-xl p-6 w-full max-w-lg">
+
+                    {/* Select Destination */}
+                    <button className="bg-white/40 backdrop-blur-sm shadow-lg rounded-xl p-6 text-center hover:shadow-xl hover:scale-[1.03] transition transform">
+                        <div className="text-3xl">📍</div>
+                        <h2 className="text-lg font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+                            Select Destination
+                        </h2>
+                        <p className="text-gray-700 text-sm">Choose where you're going</p>
                     </button>
-                </a>
 
-                {/* 2. Ride Requests */}
-                <a href="/driver/requests" className="col-span-1">
-                    <button
-                        className="w-full h-32 py-4 px-3 rounded-xl bg-white text-[#01003d] font-bold text-lg shadow-2xl hover:bg-gray-100 transition duration-200 transform hover:scale-[1.03] flex flex-col items-center justify-center"
-                    >
-                        {/* Icon for Ride Requests (Notification) */}
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mb-2" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-4H8V9h4v3h3v4z"/>
-                        </svg>
-                        Ride Requests
+                    {/* Join a Ride */}
+                    <button className="bg-white/40 backdrop-blur-sm shadow-lg rounded-xl p-6 text-center hover:shadow-xl hover:scale-[1.03] transition transform">
+                        <div className="text-3xl">🚗</div>
+                        <h2 className="text-lg font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+                            Join a Ride
+                        </h2>
+                        <p className="text-gray-700 text-sm">Find rides to join</p>
                     </button>
-                </a>
 
-                {/* 3. My Profile */}
-                <a href="/driver/profile" className="col-span-1">
-                    <button
-                        className="w-full h-32 py-4 px-3 rounded-xl bg-white text-[#01003d] font-bold text-lg shadow-2xl hover:bg-gray-100 transition duration-200 transform hover:scale-[1.03] flex flex-col items-center justify-center"
-                    >
-                        {/* Icon for Profile (User) */}
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mb-2" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                        </svg>
-                        My Profile
+                    {/* Drop/Pickup Parcel */}
+                    <button className="bg-white/40 backdrop-blur-sm shadow-lg rounded-xl p-6 text-center hover:shadow-xl hover:scale-[1.03] transition transform">
+                        <div className="text-3xl">📦</div>
+                        <h2 className="text-lg font-bold bg-gradient-to-r from-purple-500 to-pink-600 bg-clip-text text-transparent">
+                            Drop/Pickup Parcel
+                        </h2>
+                        <p className="text-gray-700 text-sm">Send packages easily</p>
                     </button>
-                </a>
 
-                {/* 4. Login/Logout */}
-                <a href="/driver/login" className="col-span-1">
-                    <button
-                        className="w-full h-32 py-4 px-3 rounded-xl bg-white text-[#01003d] font-bold text-lg shadow-2xl hover:bg-gray-100 transition duration-200 transform hover:scale-[1.03] flex flex-col items-center justify-center"
-                    >
-                        {/* Icon for Login/Logout (Exit/Enter) */}
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mb-2" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M11 7L9.6 8.4l2.6 2.6H4v2h8.2l-2.6 2.6L11 17l5-5-5-5zm9 7h-2v-4h2v4z"/>
-                        </svg>
-                        Login / Logout
+                    {/* Browse */}
+                    <button className="bg-white/40 backdrop-blur-sm shadow-lg rounded-xl p-6 text-center hover:shadow-xl hover:scale-[1.03] transition transform">
+                        <div className="text-3xl">🔍</div>
+                        <h2 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-500 bg-clip-text text-transparent">
+                            Browse
+                        </h2>
+                        <p className="text-gray-700 text-sm">See all available rides</p>
                     </button>
-                </a>
+                </div>
             </div>
 
-            <p className="mt-8 text-white text-4xl">Welcome back, Driver!</p>
+            {/* Bottom Nav Bar (icons only, small height) */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white/70 backdrop-blur-md text-[#01003d] flex justify-around items-center h-12 rounded-t-xl shadow-md">
+                {/* Back */}
+                <a href="/choose" className="text-2xl font-bold hover:text-blue-600">
+                    &lt;
+                </a>
 
+                {/* Requests */}
+                <a href="/driver/requests" className="text-2xl hover:text-blue-600">
+                    🔔
+                </a>
 
-
+                {/* Profile */}
+                <a href="/driver/profile" className="text-2xl hover:text-blue-600">
+                    👤
+                </a>
+            </div>
         </div>
     );
 }
-
