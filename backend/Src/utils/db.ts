@@ -1,11 +1,12 @@
 import mongoose from 'mongoose';
 
-const mongoURI = 'mongodb://localhost:27017/ridesharedb';
-
 export const connectDB = async () => {
     try {
+        const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/ridesharedb';
+        
         await mongoose.connect(mongoURI);
-        console.log('MongoDB connected');
+        
+        console.log(`MongoDB Connected: ${mongoose.connection.host}`);
     } catch (err) {
         console.error('MongoDB connection error:', err);
         process.exit(1);
