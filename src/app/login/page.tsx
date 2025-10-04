@@ -31,7 +31,6 @@ function saveUsers(users: LocalUser[]) {
 
 export default function AuthPage() {
     const [isLogin, setIsLogin] = useState(true);
-    const [isSignedUp, setIsSignedUp] = useState(false);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
     const [profession, setProfession] = useState("");
@@ -41,15 +40,7 @@ export default function AuthPage() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const router = useRouter();
 
-    // On mount, check if user is already signed up
-    useEffect(() => {
-        if (typeof window !== "undefined") {
-            const signedUp = localStorage.getItem("signedUp");
-            const signed = signedUp === "true";
-            setIsSignedUp(signed);
-            if (signed) setIsLogin(true);
-        }
-    }, []);
+    // (removed: hiding the Sign Up toggle based on a stored flag so users can always access sign up)
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -80,7 +71,6 @@ export default function AuthPage() {
                     if (typeof window !== "undefined") {
                         localStorage.setItem("signedUp", "true");
                     }
-                    setIsSignedUp(true);
                     setTimeout(() => {
                         setIsLogin(true);
                         setMessage("");
@@ -196,7 +186,6 @@ export default function AuthPage() {
                 )}
                 <p className="text-center text-sm mt-6 text-gray-700">
                     {isLogin ? "Don’t have an account?" : "Already have an account?"}{" "}
-                    {!isSignedUp && (
                         <button
                             onClick={() => {
                                 setIsLogin(!isLogin);
@@ -206,9 +195,9 @@ export default function AuthPage() {
                         >
                             {isLogin ? "Sign Up" : "Login"}
                         </button>
-                    )}
                 </p>
             </div>
         </div>
     );
 }
+
