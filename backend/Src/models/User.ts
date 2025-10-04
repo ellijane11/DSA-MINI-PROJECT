@@ -2,7 +2,7 @@ import { Schema, model, Document } from 'mongoose';
 
 export interface IUser extends Document {
   name: string;
-  email: string;
+  phone: string;
   password: string;
   role: 'driver' | 'passenger';
   location?: {
@@ -14,7 +14,7 @@ export interface IUser extends Document {
 
 const UserSchema = new Schema<IUser>({
   name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
+  phone: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['driver', 'passenger'], required: true },
   location: {

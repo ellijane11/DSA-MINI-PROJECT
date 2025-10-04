@@ -84,7 +84,7 @@ export default function PassengerDestination() {
         e.preventDefault();
         console.log("Sending to passengers:", formData);
         const routeKey = `${formData.pickup}|${formData.destination}|${formData.date}`;
-        const current = typeof window !== 'undefined' ? localStorage.getItem('current_user_email') || 'passenger_demo' : 'passenger_demo';
+    const current = typeof window !== 'undefined' ? localStorage.getItem('current_user_email') || 'guest' : 'guest';
         addRequest({
             fromId: current,
             fromName: "Passenger (demo)",
@@ -108,7 +108,7 @@ export default function PassengerDestination() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         console.log("Sending to drivers:", formData);
-        const current = typeof window !== 'undefined' ? localStorage.getItem('current_user_email') || 'passenger_demo' : 'passenger_demo';
+    const current = typeof window !== 'undefined' ? localStorage.getItem('current_user_email') || 'guest' : 'guest';
         addRequest({
             fromId: current,
             fromName: "Passenger (demo)",
