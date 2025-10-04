@@ -54,6 +54,9 @@ export default function AuthPage() {
                 const user = users.find((u) => u.email === email && u.password === password);
                 if (user) {
                     setMessage("Login successful ✅");
+                    if (typeof window !== "undefined") {
+                        try { localStorage.setItem('current_user_email', email); } catch (e) {}
+                    }
                     setTimeout(() => router.push("/choose"), 1500);
                 } else {
                     setMessage("User not found or incorrect password ❌");
@@ -70,6 +73,7 @@ export default function AuthPage() {
                     setMessage("Sign Up successful ✅");
                     if (typeof window !== "undefined") {
                         localStorage.setItem("signedUp", "true");
+                        try { localStorage.setItem('current_user_email', email); } catch (e) {}
                     }
                     setTimeout(() => {
                         setIsLogin(true);

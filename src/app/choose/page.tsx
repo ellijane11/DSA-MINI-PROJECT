@@ -28,6 +28,9 @@ const ChooseRolePage = () => {
                     <span>Are you a driver 🚗</span>
                 </Link>
             </div>
+            <div className="mt-8">
+                <Link href="/login" className="text-white/90 hover:underline">&larr; Back to Login</Link>
+            </div>
         </div>
     );
 };

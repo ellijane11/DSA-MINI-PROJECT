@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaTruck, FaTaxi, FaCommentDots } from "react-icons/fa";
 
 interface Person {
@@ -8,20 +8,25 @@ interface Person {
     name: string;
 }
 
-const ridePeople: Person[] = [
-    { id: "r1", name: "Driver One" },
-    { id: "r2", name: "Driver Two" },
-];
-const parcelPeople: Person[] = [
-    { id: "p1", name: "Driver Three" },
-    { id: "p2", name: "Driver Four" },
-];
+import { getPendingForDrivers, updateRequestStatus } from "../../../lib/requests";
+
+// demo placeholder: actual people come from requests
+type Req = { id: string; fromName?: string; route?: string };
 
 export default function RequestsPage() {
     const [openDropdown, setOpenDropdown] = useState<"rides" | "parcels" | "feedback" | null>(null);
-    const [selectedFeedbackPerson, setSelectedFeedbackPerson] = useState<Person | null>(null);
+    // allow either demo Person or request-like object for feedback selection
+    const [selectedFeedbackPerson, setSelectedFeedbackPerson] = useState<any | null>(null);
     const [feedbackText, setFeedbackText] = useState("");
     const [feedbackRating, setFeedbackRating] = useState(0);
+    const [rideRequests, setRideRequests] = useState<Req[]>([]);
+
+    useEffect(() => {
+        setRideRequests(getPendingForDrivers());
+        const onStorage = () => setRideRequests(getPendingForDrivers());
+        window.addEventListener("storage", onStorage);
+        return () => window.removeEventListener("storage", onStorage);
+    }, []);
 
     const toggleDropdown = (tab: "rides" | "parcels" | "feedback") => {
         setOpenDropdown(openDropdown === tab ? null : tab);
@@ -84,29 +89,42 @@ export default function RequestsPage() {
                 >
                     {openDropdown === "rides" && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {ridePeople.map((p) => (
-                                <article
-                                    key={p.id}
-                                    className="border border-pink-400 rounded-xl p-6 shadow hover:shadow-lg transition cursor-pointer text-pink-600 font-semibold text-lg"
-                                >
-                                    {p.name}
+                            {rideRequests.map((r) => (
+                                <article key={r.id} className="border border-pink-400 rounded-xl p-6 shadow hover:shadow-lg transition text-pink-600 font-semibold text-lg">
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <div className="text-lg">{r.fromName || 'Passenger'}</div>
+                                            <div className="text-sm text-gray-600">{r.route}</div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => { updateRequestStatus(r.id, 'accepted'); setRideRequests(getPendingForDrivers()); alert('Request accepted (driver)'); }} className="px-3 py-1 rounded bg-green-500 text-white">Accept</button>
+                                            <button onClick={() => { updateRequestStatus(r.id, 'rejected'); setRideRequests(getPendingForDrivers()); }} className="px-3 py-1 rounded bg-red-500 text-white">Reject</button>
+                                        </div>
+                                    </div>
                                 </article>
                             ))}
-                            {ridePeople.length === 0 && <p className="text-center text-gray-600">No ride requests.</p>}
+                            {rideRequests.length === 0 && <p className="text-center text-gray-600">No ride requests.</p>}
                         </div>
                     )}
 
                     {openDropdown === "parcels" && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {parcelPeople.map((p) => (
-                                <article
-                                    key={p.id}
-                                    className="border border-purple-500 rounded-xl p-6 shadow hover:shadow-lg transition cursor-pointer text-purple-600 font-semibold text-lg"
-                                >
-                                    {p.name}
+                            {/* For demo the parcels panel is the same as rides */}
+                            {rideRequests.map((p) => (
+                                <article key={p.id} className="border border-purple-500 rounded-xl p-6 shadow hover:shadow-lg transition text-purple-600 font-semibold text-lg">
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <div className="text-lg">{p.fromName || 'Passenger'}</div>
+                                            <div className="text-sm text-gray-600">{p.route}</div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => { updateRequestStatus(p.id, 'accepted'); setRideRequests(getPendingForDrivers()); alert('Parcel request accepted (driver)'); }} className="px-3 py-1 rounded bg-green-500 text-white">Accept</button>
+                                            <button onClick={() => { updateRequestStatus(p.id, 'rejected'); setRideRequests(getPendingForDrivers()); }} className="px-3 py-1 rounded bg-red-500 text-white">Reject</button>
+                                        </div>
+                                    </div>
                                 </article>
                             ))}
-                            {parcelPeople.length === 0 && <p className="text-center text-gray-600">No parcel requests.</p>}
+                            {rideRequests.length === 0 && <p className="text-center text-gray-600">No parcel requests.</p>}
                         </div>
                     )}
 
@@ -116,15 +134,15 @@ export default function RequestsPage() {
                             <select
                                 value={selectedFeedbackPerson?.id || ""}
                                 onChange={(e) => {
-                                    const person = [...ridePeople, ...parcelPeople].find((p) => p.id === e.target.value);
+                                    const person = rideRequests.find((p) => p.id === e.target.value);
                                     setSelectedFeedbackPerson(person || null);
                                 }}
                                 className="w-full p-3 border border-gray-300 rounded-lg text-lg outline-none focus:ring-2 focus:ring-pink-400"
                             >
                                 <option value="">-- Choose --</option>
-                                {[...ridePeople, ...parcelPeople].map((p) => (
+                                {rideRequests.map((p) => (
                                     <option key={p.id} value={p.id}>
-                                        {p.name}
+                                        {p.fromName || p.id}
                                     </option>
                                 ))}
                             </select>

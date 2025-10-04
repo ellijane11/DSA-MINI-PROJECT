@@ -34,7 +34,7 @@ export default function DriverDashboard() {
 
           {/* Join a Ride */}
           <button
-            onClick={() => router.push("/driver/join-ride")}
+            onClick={() => router.push("/driver/rides")}
             className="bg-white/40 backdrop-blur-sm shadow-lg rounded-xl p-6 text-center hover:shadow-xl hover:scale-[1.03] transition transform"
           >
             <div className="text-3xl">🚗</div>

@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { FaMapMarkerAlt, FaCalendarAlt, FaTaxi, FaBusAlt, FaCar } from 'react-icons/fa';
+import { addRequest } from "../../../lib/requests";
 // Note: You may need to install react-icons: npm install react-icons
 
 // --- Type Definitions ---
@@ -82,13 +83,44 @@ export default function PassengerDestination() {
     const handleSendToPassengers = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         console.log("Sending to passengers:", formData);
-        alert("Request sent to passengers! (demo placeholder)");
+        const routeKey = `${formData.pickup}|${formData.destination}|${formData.date}`;
+        const current = typeof window !== 'undefined' ? localStorage.getItem('current_user_email') || 'passenger_demo' : 'passenger_demo';
+        addRequest({
+            fromId: current,
+            fromName: "Passenger (demo)",
+            toType: "passenger",
+            type: "ride",
+            route: routeKey,
+            pickup: formData.pickup,
+            destination: formData.destination,
+            date: formData.date,
+            time: (formData as any).time || '',
+            seats: Number(formData.passengers) || 1,
+            vehicleType: formData.selectedOption || '',
+        });
+        try { 
+            const cur = localStorage.getItem('current_user_email') || 'guest';
+            localStorage.setItem(`last_route_${cur}`, routeKey);
+        } catch (e) {}
+        alert("Request sent to passengers!");
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         console.log("Sending to drivers:", formData);
-        alert("Request sent to drivers! (demo placeholder)");
+        const current = typeof window !== 'undefined' ? localStorage.getItem('current_user_email') || 'passenger_demo' : 'passenger_demo';
+        addRequest({
+            fromId: current,
+            fromName: "Passenger (demo)",
+            toType: "driver",
+            type: "ride",
+            route: `${formData.pickup}|${formData.destination}|${formData.date}`,
+        });
+        try { 
+            const cur = localStorage.getItem('current_user_email') || 'guest';
+            localStorage.setItem(`last_route_${cur}`, `${formData.pickup}|${formData.destination}|${formData.date}`);
+        } catch (e) {}
+        alert("Request sent to drivers!");
     };
 
     const mainGradient = "linear-gradient(to right, var(--btn-grad-start), var(--btn-grad-mid), var(--btn-grad-end))";
