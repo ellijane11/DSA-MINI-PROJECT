@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useAuth } from "../../../context/AuthContext";
 import Link from "next/link";
 import { getPendingForDrivers, updateRequestStatus, ignoreRequest } from "../../../lib/requests";
 
@@ -30,7 +31,49 @@ export default function DriverRidesPage() {
     const refreshPending = () => {
         const current = typeof window !== 'undefined' ? localStorage.getItem('current_user_email') || 'guest' : 'guest';
         const rk = routeKey || (storedRoute || undefined);
-        const all = getPendingForDrivers(rk as any, current || undefined);
+        let all = getPendingForDrivers(rk as any, current || undefined) || [];
+        // determine driver location: check active_rides_v1 latest for this driver
+        try {
+            const activeRaw = localStorage.getItem('active_rides_v1');
+            const active = activeRaw ? JSON.parse(activeRaw) : [];
+            const myActive = active.filter((a: any) => a.driver === current).sort((a: any, b: any) => (b.id || 0) - (a.id || 0))[0];
+            let driverLoc: { lat: number; lng: number } | null = null;
+            if (myActive && myActive.location) driverLoc = { lat: myActive.location.lat || 0, lng: myActive.location.lng || 0 };
+            else {
+                const usersRaw = localStorage.getItem('local_users_v1');
+                const users = usersRaw ? JSON.parse(usersRaw) : [];
+                const me = users.find((u: any) => (u.email || u.phone) === current);
+                if (me && me.location) driverLoc = { lat: me.location.lat || 0, lng: me.location.lng || 0 };
+            }
+
+            if (driverLoc) {
+                // compute distance to each pending request if they carry pickup coordinates
+                const haversine = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+                    const toRad = (v: number) => (v * Math.PI) / 180;
+                    const R = 6371; // km
+                    const dLat = toRad(lat2 - lat1);
+                    const dLon = toRad(lon2 - lon1);
+                    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                    return R * c;
+                };
+
+                all = all.map((r: any) => {
+                    // try pickup location in request (if stored as lat/lng)
+                    let dist = Number.POSITIVE_INFINITY;
+                    if (r.pickupLat && r.pickupLng) {
+                        dist = haversine(driverLoc!.lat, driverLoc!.lng, r.pickupLat, r.pickupLng);
+                    } else if (r.location && r.location.lat && r.location.lng) {
+                        dist = haversine(driverLoc!.lat, driverLoc!.lng, r.location.lat, r.location.lng);
+                    }
+                    return { ...r, __distance_km: dist };
+                });
+
+                all.sort((a: any, b: any) => (a.__distance_km || Number.POSITIVE_INFINITY) - (b.__distance_km || Number.POSITIVE_INFINITY));
+            }
+        } catch (e) {
+            // ignore
+        }
         setPending(all || []);
     };
 
@@ -51,6 +94,13 @@ export default function DriverRidesPage() {
         window.addEventListener('storage', onStorage as any);
         return () => window.removeEventListener('storage', onStorage as any);
     }, []);
+
+    const auth = useAuth();
+
+    // refresh when auth user changes (so profile/location updates reflect immediately)
+    useEffect(() => {
+        refreshPending();
+    }, [auth.user]);
 
     // persist routeKey edits per-user so the filter stays in sync (like passenger page)
     useEffect(() => {
@@ -102,7 +152,7 @@ export default function DriverRidesPage() {
                             <div className="w-full md:w-3/4">
                                 <div className="font-semibold text-lg text-black">{r.fromName || 'Unknown'}</div>
                                 <div className="text-xs text-gray-600 mb-2">Request ID: <span className="text-black">{r.id}</span> · From ID: <span className="text-black">{r.fromId || '—'}</span></div>
-                                <div className="text-sm text-black">{r.pickup} → {r.destination}</div>
+                                <div className="text-sm text-black">{r.pickup} → {r.destination} {r.__distance_km !== undefined && r.__distance_km !== Number.POSITIVE_INFINITY ? <span className="text-xs text-gray-500">· {r.__distance_km.toFixed(2)} km away</span> : null}</div>
                                 <div className="text-sm text-black">Date: {r.date} {r.time ? `· ${r.time}` : ''}</div>
                                 <div className="text-sm text-black">Seats: {r.seats || '1'} · Vehicle: {r.vehicleType || 'Any'}</div>
                                 <div className="text-sm text-black">Status: {r.status}</div>
@@ -124,6 +174,9 @@ export default function DriverRidesPage() {
                 </NavLink>
                 <NavLink href="/driver/requests" tooltip="Requests">
                     🔔
+                </NavLink>
+                <NavLink href="/driver/map" tooltip="Map">
+                    🗺️
                 </NavLink>
                 <NavLink href="/driver/profile" tooltip="Profile">
                     👤

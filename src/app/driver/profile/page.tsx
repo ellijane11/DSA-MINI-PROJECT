@@ -2,19 +2,35 @@
 
 import React, { useState, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
-
-const mockUser = {
-    name: "Nikhil",
-    email: "nikhil@email.com",
-    phone: "+91 99999 88888",
-    photo: "", // Default empty photo
-};
+import { useAuth } from "../../../context/AuthContext";
 
 export default function ProfilePage() {
     const router = useRouter();
+    const auth = useAuth();
     const [edit, setEdit] = useState(false);
-    const [user, setUser] = useState(mockUser);
-    const [photo, setPhoto] = useState<string>(user.photo);
+    const [user, setUser] = useState<any>(auth.user || { name: '', email: '', phone: '', photo: '' });
+    const [photo, setPhoto] = useState<string>(auth.user?.photo || '');
+    const [loading, setLoading] = useState(false);
+
+    React.useEffect(() => {
+        // reactively update when auth context changes
+        if (auth.user) {
+            setUser(auth.user);
+            setPhoto((auth.user as any).profileImageUrl || (auth.user as any).photo || '');
+            return;
+        }
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        if (!token) return;
+        setLoading(true);
+        fetch('/api/users/me', {
+            headers: { Authorization: `Bearer ${token}` }
+        }).then(res => res.json()).then((data) => {
+            if (data && data.user) {
+                setUser(data.user);
+                setPhoto((data.user as any).profileImageUrl || (data.user as any).photo || '');
+            }
+        }).catch(() => {}).finally(() => setLoading(false));
+    }, [auth.user]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setUser({ ...user, [e.target.name]: e.target.value });
@@ -136,6 +152,10 @@ export default function ProfilePage() {
                                 color: "black", // Text color fixed here
                             }}
                         />
+                    </div>
+                    <div>
+                        <label className="block text-gray-600 text-sm font-medium mb-1">User Type</label>
+                        <input type="text" name="role" value={user.role || user.type || ''} onChange={handleChange} className="w-full border rounded-lg px-4 py-2 focus:outline-none" disabled />
                     </div>
                 </form>
 

@@ -70,6 +70,8 @@ export default function PassengerDestination() {
         passengers: "",
         selectedOption: "",
     });
+    const [pickupLat, setPickupLat] = useState("");
+    const [pickupLng, setPickupLng] = useState("");
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -96,6 +98,8 @@ export default function PassengerDestination() {
             date: formData.date,
             time: (formData as any).time || '',
             seats: Number(formData.passengers) || 1,
+            pickupLat: pickupLat ? parseFloat(pickupLat) : undefined,
+            pickupLng: pickupLng ? parseFloat(pickupLng) : undefined,
             vehicleType: formData.selectedOption || '',
         });
         try { 
@@ -115,6 +119,12 @@ export default function PassengerDestination() {
             toType: "driver",
             type: "ride",
             route: `${formData.pickup}|${formData.destination}|${formData.date}`,
+            pickup: formData.pickup,
+            destination: formData.destination,
+            date: formData.date,
+            time: (formData as any).time || '',
+            pickupLat: pickupLat ? parseFloat(pickupLat) : undefined,
+            pickupLng: pickupLng ? parseFloat(pickupLng) : undefined,
         });
         try { 
             const cur = localStorage.getItem('current_user_email') || 'guest';
@@ -154,6 +164,11 @@ export default function PassengerDestination() {
                                 className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/70 border border-gray-300 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-pink-300 transition"
                             />
                             <FaMapMarkerAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-pink-500" />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <input value={pickupLat} onChange={(e) => setPickupLat(e.target.value)} placeholder="Pickup latitude (optional)" className="p-2 rounded" />
+                            <input value={pickupLng} onChange={(e) => setPickupLng(e.target.value)} placeholder="Pickup longitude (optional)" className="p-2 rounded" />
                         </div>
 
                         <div className="relative">
@@ -253,6 +268,9 @@ export default function PassengerDestination() {
                 </NavLink>
                 <NavLink href="/requests" gradientStyle={btnGradient}>
                     <span className="text-2xl"> 🔔</span>
+                </NavLink>
+                <NavLink href="/passenger/map" gradientStyle={btnGradient}>
+                    🗺️
                 </NavLink>
                 <NavLink href="/profile" gradientStyle={btnGradient}>
                     👤

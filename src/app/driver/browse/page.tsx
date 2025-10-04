@@ -40,9 +40,15 @@ export default function BrowsePage() {
                 {drivers.length === 0 && <p className="text-gray-200">No drivers signed up yet.</p>}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {drivers.map((p: any, idx: number) => (
-                        <article key={p.email || idx} className="bg-white/20 p-4 rounded-lg">
-                            <div className="font-semibold text-black">{p.name || p.email}</div>
-                            <div className="text-sm text-black">{p.email}</div>
+                        <article key={p.phone || p.email || idx} className="bg-white/20 p-4 rounded-lg">
+                            <div className="font-semibold text-black">{p.name || p.phone || p.email}</div>
+                            <div className="text-sm text-black">
+                                {p.phone ? (
+                                    <a href={`tel:${p.phone}`} className="underline">{p.phone}</a>
+                                ) : (
+                                    p.email
+                                )}
+                            </div>
                             <div className="text-xs text-black">{p.profession}</div>
                         </article>
                     ))}

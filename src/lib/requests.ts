@@ -12,6 +12,9 @@ export type RideRequest = {
     destination?: string;
     date?: string;
     time?: string;
+    // optional coordinates (for sorting by proximity)
+    pickupLat?: number;
+    pickupLng?: number;
     seats?: number;
     vehicleType?: string;
     // per-request state
