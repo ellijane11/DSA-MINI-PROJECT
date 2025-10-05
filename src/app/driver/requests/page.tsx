@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Bell from "../../../components/Bell";
 import { FaTruck, FaTaxi, FaCommentDots } from "react-icons/fa";
 
 interface Person {
@@ -8,7 +9,7 @@ interface Person {
     name: string;
 }
 
-import { getPendingForDrivers, updateRequestStatus } from "../../../lib/requests";
+import { getPendingForDrivers, updateRequestStatus, addNotification, getAllRequests } from "../../../lib/requests";
 
 // demo placeholder: actual people come from requests
 type Req = { id: string; fromName?: string; route?: string };
@@ -97,7 +98,17 @@ export default function RequestsPage() {
                                             <div className="text-sm text-gray-600">{r.route}</div>
                                         </div>
                                         <div className="flex gap-2">
-                                            <button onClick={() => { updateRequestStatus(r.id, 'accepted'); setRideRequests(getPendingForDrivers()); alert('Request accepted (driver)'); }} className="px-3 py-1 rounded bg-green-500 text-white">Accept</button>
+                                            <button onClick={() => {
+                                                updateRequestStatus(r.id, 'accepted');
+                                                // notify requester
+                                                try {
+                                                    const all = getAllRequests();
+                                                    const req = all.find(x => x.id === r.id);
+                                                    addNotification({ toId: req?.fromId, fromId: localStorage.getItem('current_user_email') || 'driver', title: 'Your request was accepted', body: `Request ${r.id} was accepted by a driver.` });
+                                                } catch (e) {}
+                                                setRideRequests(getPendingForDrivers());
+                                                alert('Request accepted (driver)');
+                                            }} className="px-3 py-1 rounded bg-green-500 text-white">Accept</button>
                                             <button onClick={() => { updateRequestStatus(r.id, 'rejected'); setRideRequests(getPendingForDrivers()); }} className="px-3 py-1 rounded bg-red-500 text-white">Reject</button>
                                         </div>
                                     </div>
@@ -118,7 +129,16 @@ export default function RequestsPage() {
                                             <div className="text-sm text-gray-600">{p.route}</div>
                                         </div>
                                         <div className="flex gap-2">
-                                            <button onClick={() => { updateRequestStatus(p.id, 'accepted'); setRideRequests(getPendingForDrivers()); alert('Parcel request accepted (driver)'); }} className="px-3 py-1 rounded bg-green-500 text-white">Accept</button>
+                                            <button onClick={() => {
+                                                updateRequestStatus(p.id, 'accepted');
+                                                try {
+                                                    const all = getAllRequests();
+                                                    const req = all.find(x => x.id === p.id);
+                                                    addNotification({ toId: req?.fromId, fromId: localStorage.getItem('current_user_email') || 'driver', title: 'Your parcel was accepted', body: `Parcel request ${p.id} was accepted by a driver.` });
+                                                } catch (e) {}
+                                                setRideRequests(getPendingForDrivers());
+                                                alert('Parcel request accepted (driver)');
+                                            }} className="px-3 py-1 rounded bg-green-500 text-white">Accept</button>
                                             <button onClick={() => { updateRequestStatus(p.id, 'rejected'); setRideRequests(getPendingForDrivers()); }} className="px-3 py-1 rounded bg-red-500 text-white">Reject</button>
                                         </div>
                                     </div>

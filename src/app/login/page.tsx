@@ -90,6 +90,7 @@ export default function AuthPage() {
                         if (user) {
                             setMessage('Login successful (local) ✅');
                             try { localStorage.setItem('current_user_email', user.email || user.phone || 'guest'); } catch (e) {}
+                            try { const localTok = 'local-' + Date.now().toString(); localStorage.setItem('token', localTok); auth.login(localTok, { name: user.name, email: user.email, phone: user.phone, role: user.profession }); } catch (e) {}
                             setTimeout(() => router.push('/choose'), 800);
                         } else {
                             setMessage('User not found or incorrect password ❌');
@@ -130,6 +131,7 @@ export default function AuthPage() {
                             saveUsers(next);
                             setMessage('Sign Up successful (local) ✅');
                             try { localStorage.setItem('current_user_email', email || phone || 'guest'); } catch (e) {}
+                            try { const localTok = 'local-' + Date.now().toString(); localStorage.setItem('token', localTok); auth.login(localTok, { name, email, phone, role: profession || 'passenger' }); } catch (e) {}
                             setTimeout(() => router.push('/choose'), 800);
                         }
                         setLoading(false);

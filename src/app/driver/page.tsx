@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Bell from "../../components/Bell";
 import { useRouter } from "next/navigation";
 
 export default function DriverDashboard() {
@@ -78,9 +79,9 @@ export default function DriverDashboard() {
         </a>
 
         {/* Requests */}
-        <a href="/driver/requests" className="text-2xl hover:text-blue-600">
-          🔔
-        </a>
+        <div className="text-2xl">
+          <Bell />
+        </div>
 
         {/* Profile */}
         <a href="/driver/profile" className="text-2xl hover:text-blue-600">

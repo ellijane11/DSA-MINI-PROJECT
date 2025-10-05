@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import Bell from "../../components/Bell";
 import { useRouter } from "next/navigation";
 
 export default function DriverDashboard() {
@@ -10,14 +11,7 @@ export default function DriverDashboard() {
     return (
         <div className="min-h-screen flex flex-col justify-between bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300 relative">
 
-            {/* Back button */}
-            <button
-                onClick={() => router.push("/choose")}
-                className="absolute top-6 left-6 z-30 p-2 rounded-full bg-black bg-opacity-40 text-white hover:bg-opacity-60 transition"
-                aria-label="Go back to role selection"
-            >
-                ←
-            </button>
+            
 
             {/* Top Heading */}
             <header className="p-6 text-center">
@@ -92,9 +86,9 @@ export default function DriverDashboard() {
                 </button>
 
                 {/* Requests */}
-                <a href="/driver/requests" className="text-2xl hover:text-blue-600">
-                    🔔
-                </a>
+                <div className="text-2xl">
+                    <Bell />
+                </div>
 
                 {/* Profile */}
                 <a href="/driver/profile" className="text-2xl hover:text-blue-600">

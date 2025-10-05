@@ -30,6 +30,20 @@ export default function ProfilePage() {
                 setPhoto((data.user as any).profileImageUrl || (data.user as any).photo || '');
             }
         }).catch(() => {}).finally(() => setLoading(false));
+
+        // fallback: if no backend user and a demo user is stored in local_users_v1, populate from there
+        try {
+            const cur = typeof window !== 'undefined' ? localStorage.getItem('current_user_email') : null;
+            if (!auth.user && cur) {
+                const raw = localStorage.getItem('local_users_v1');
+                const users = raw ? JSON.parse(raw) : [];
+                const found = users.find((u: any) => (u.email === cur || u.phone === cur));
+                if (found) {
+                    setUser({ name: found.name, email: found.email, phone: found.phone, role: found.profession });
+                    setPhoto('');
+                }
+            }
+        } catch (e) {}
     }, [auth.user]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,7 +129,7 @@ export default function ProfilePage() {
                             disabled={!edit}
                             style={{
                                 background: "linear-gradient(90deg, #c3cfe2 0%, #e0c3fc 100%)",
-                                color: "black", // Text color fixed here
+                                color: "black"
                             }}
                         />
                     </div>
@@ -132,7 +146,7 @@ export default function ProfilePage() {
                             disabled={!edit}
                             style={{
                                 background: "linear-gradient(90deg, #c3cfe2 0%, #e0c3fc 100%)",
-                                color: "black", // Text color fixed here
+                                color: "black"
                             }}
                         />
                     </div>
@@ -149,13 +163,24 @@ export default function ProfilePage() {
                             disabled={!edit}
                             style={{
                                 background: "linear-gradient(90deg, #c3cfe2 0%, #e0c3fc 100%)",
-                                color: "black", // Text color fixed here
+                                color: "black"
                             }}
                         />
                     </div>
                     <div>
                         <label className="block text-gray-600 text-sm font-medium mb-1">User Type</label>
-                        <input type="text" name="role" value={user.role || user.type || ''} onChange={handleChange} className="w-full border rounded-lg px-4 py-2 focus:outline-none" disabled />
+                        <input
+                            type="text"
+                            name="role"
+                            value={user.role || user.type || ''}
+                            onChange={handleChange}
+                            className="w-full border rounded-lg px-4 py-2 focus:outline-none"
+                            disabled
+                            style={{
+                                background: "linear-gradient(90deg, #c3cfe2 0%, #e0c3fc 100%)",
+                                color: "black"
+                            }}
+                        />
                     </div>
                 </form>
 

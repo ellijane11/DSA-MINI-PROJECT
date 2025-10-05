@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
+import Bell from "../../../components/Bell";
 
 interface NavLinkProps {
     href: string;
@@ -71,7 +72,7 @@ export default function BrowsePage() {
                     &lt;
                 </NavLink>
                 <NavLink href="/requests" tooltip="Requests">
-                    🔔
+                    <Bell />
                 </NavLink>
                 <NavLink href="/profile" tooltip="Profile">
                     👤

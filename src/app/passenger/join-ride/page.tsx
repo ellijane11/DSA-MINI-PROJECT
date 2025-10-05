@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { getPendingForPassengers, updateRequestStatus, joinRequest, ignoreRequest } from "../../../lib/requests";
+import Bell from "../../../components/Bell";
+import { getPendingForPassengers, updateRequestStatus, joinRequest, ignoreRequest, addNotification, getAllRequests } from "../../../lib/requests";
 
 interface NavLinkProps {
     href: string;
@@ -86,6 +87,11 @@ export default function JoinRidePage() {
         const current = typeof window !== 'undefined' ? localStorage.getItem('current_user_email') || 'guest' : 'guest';
         joinRequest(id, current);
         refreshPending();
+        try {
+            const all = getAllRequests();
+            const req = all.find(x => x.id === id);
+            addNotification({ toId: req?.fromId, fromId: current, title: 'Your request was accepted', body: `A passenger joined your request (${id}).` });
+        } catch (e) {}
         alert('You joined this request (demo).');
     };
 
@@ -145,9 +151,9 @@ export default function JoinRidePage() {
                 <NavLink href="/passenger" tooltip="Home">
                     &lt;
                 </NavLink>
-                <NavLink href="/requests" tooltip="Requests">
-                    🔔
-                </NavLink>
+                <div className="nav-item text-4xl p-2">
+                    <Bell />
+                </div>
                 <NavLink href="/profile" tooltip="Profile">
                     👤
                 </NavLink>

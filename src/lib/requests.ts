@@ -17,6 +17,10 @@ export type RideRequest = {
     pickupLng?: number;
     seats?: number;
     vehicleType?: string;
+    // parcel-specific
+    parcelWeight?: string;
+    parcelNotes?: string;
+    parcelDimensions?: string;
     // per-request state
     status: "pending" | "accepted" | "rejected";
     joinedBy?: string[];
@@ -141,5 +145,63 @@ export function updateRequestStatus(id: string, status: RideRequest["status"]) {
     if (idx === -1) return null;
     list[idx] = { ...list[idx], status };
     writeAll(list);
+    return list[idx];
+}
+
+// Notifications (simple localStorage-backed)
+export type Notification = {
+    id: string;
+    toId?: string; // user email or id
+    fromId?: string;
+    title: string;
+    body?: string;
+    read?: boolean;
+    createdAt: string;
+};
+
+const NOTIF_KEY = "notifications_v1";
+
+function readNotifs(): Notification[] {
+    if (typeof window === "undefined") return [];
+    try {
+        const raw = localStorage.getItem(NOTIF_KEY);
+        return raw ? (JSON.parse(raw) as Notification[]) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function writeNotifs(list: Notification[]) {
+    if (typeof window === "undefined") return;
+    try {
+        localStorage.setItem(NOTIF_KEY, JSON.stringify(list));
+    } catch (e) {}
+}
+
+export function addNotification(data: Omit<Notification, "id" | "createdAt" | "read">) {
+    const list = readNotifs();
+    const n: Notification = {
+        ...data,
+        id: `notif_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        read: false,
+        createdAt: new Date().toISOString(),
+    };
+    list.push(n);
+    writeNotifs(list);
+    return n;
+}
+
+export function getNotificationsForUser(userId?: string) {
+    const all = readNotifs();
+    if (!userId) return all;
+    return all.filter((n) => n.toId === userId);
+}
+
+export function markNotificationRead(id: string) {
+    const list = readNotifs();
+    const idx = list.findIndex((n) => n.id === id);
+    if (idx === -1) return null;
+    list[idx] = { ...list[idx], read: true };
+    writeNotifs(list);
     return list[idx];
 }

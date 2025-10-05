@@ -1,6 +1,8 @@
 "use client";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
+import { addRequest } from "../../../lib/requests";
 import Link from "next/link";
+import Bell from "../../../components/Bell";
 
 // --- Type Definitions ---
 type ParcelOption = "pickup" | "drop" | "";
@@ -61,6 +63,15 @@ const ParcelRadioSelector: React.FC<ParcelRadioSelectorProps> = ({
 // --- Main Component ---
 export default function PassengerParcelPage() {
     const [selectedOption, setSelectedOption] = useState<ParcelOption>("");
+    const [pickupLocation, setPickupLocation] = useState("");
+    const [dropoffLocation, setDropoffLocation] = useState("");
+    const [weight, setWeight] = useState("");
+    const [notes, setNotes] = useState("");
+    const [senderName, setSenderName] = useState("");
+    const [senderContact, setSenderContact] = useState("");
+    const [recipient, setRecipient] = useState<"driver" | "passenger" | "both">("driver");
+    // For demo: coordinates could be added here if using a map
+    const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
 
     const mainGradientStyle = {
         backgroundImage: "linear-gradient(to right, #8aceff, #ffbae9, #d8baff)",
@@ -76,12 +87,44 @@ export default function PassengerParcelPage() {
     );
 
     const handleSendRequest = useCallback(() => {
-        if (selectedOption) {
-            alert(`Request sent for ${selectedOption} parcel! (demo placeholder)`);
-        }
-    }, [selectedOption]);
+        if (selectedOption && pickupLocation && dropoffLocation) {
+            const fromId = typeof window !== 'undefined' ? (localStorage.getItem('current_user_email') || 'guest') : 'guest';
+            const fromName = senderName || localStorage.getItem('current_user_email') || 'Guest';
+            const routeKey = `${pickupLocation}|${dropoffLocation}|${new Date().toISOString().slice(0,10)}`;
+            const payload = {
+                fromId,
+                fromName,
+                type: "parcel" as const,
+                pickup: pickupLocation,
+                destination: dropoffLocation,
+                pickupLat: location?.lat,
+                pickupLng: location?.lng,
+                seats: 1,
+                vehicleType: weight || undefined,
+                parcelWeight: weight || undefined,
+                parcelNotes: notes || undefined,
+                route: routeKey,
+            };
 
-    const isButtonDisabled = !selectedOption;
+            const created: any[] = [];
+            if (recipient === "driver" || recipient === "both") {
+                const r1 = addRequest({ ...payload, toType: "driver", });
+                created.push(r1);
+            }
+            if (recipient === "passenger" || recipient === "both") {
+                const r2 = addRequest({ ...payload, toType: "passenger", });
+                created.push(r2);
+            }
+            alert(`Parcel request created (${created.length}). Drivers/passengers on matching routes will see it.`);
+            // clear fields
+            setPickupLocation("");
+            setDropoffLocation("");
+            setWeight("");
+            setNotes("");
+        }
+    }, [selectedOption, pickupLocation, dropoffLocation, location]);
+
+    const isButtonDisabled = !selectedOption || !pickupLocation || !dropoffLocation;
 
     return (
         <div
@@ -92,7 +135,7 @@ export default function PassengerParcelPage() {
                 Passenger Parcel
             </h1>
 
-            <div className="flex flex-col gap-10 w-[240px] text-center">
+            <div className="flex flex-col gap-8 w-[320px] text-center">
                 <div className="flex justify-around mb-3">
                     <ParcelRadioSelector
                         value="pickup"
@@ -106,6 +149,87 @@ export default function PassengerParcelPage() {
                         onChange={handleRadioChange}
                         label="Drop Parcel"
                     />
+                </div>
+
+                <input
+                    type="text"
+                    placeholder="Pickup Location"
+                    className="rounded-lg px-4 py-2 text-black mb-2"
+                    value={pickupLocation}
+                    onChange={e => setPickupLocation(e.target.value)}
+                />
+                <input
+                    type="text"
+                    placeholder="Drop-off Location"
+                    className="rounded-lg px-4 py-2 text-black mb-2"
+                    value={dropoffLocation}
+                    onChange={e => setDropoffLocation(e.target.value)}
+                />
+                <input
+                    type="text"
+                    placeholder="Your name (optional)"
+                    className="rounded-lg px-4 py-2 text-black mb-2"
+                    value={senderName}
+                    onChange={e => setSenderName(e.target.value)}
+                />
+                <input
+                    type="text"
+                    placeholder="Contact (email/phone)"
+                    className="rounded-lg px-4 py-2 text-black mb-2"
+                    value={senderContact}
+                    onChange={e => setSenderContact(e.target.value)}
+                />
+                <input
+                    type="text"
+                    placeholder="Parcel weight / size"
+                    className="rounded-lg px-4 py-2 text-black mb-2"
+                    value={weight}
+                    onChange={e => setWeight(e.target.value)}
+                />
+                <textarea
+                    placeholder="Notes about parcel"
+                    className="rounded-lg px-4 py-2 text-black mb-2 h-20"
+                    value={notes}
+                    onChange={e => setNotes(e.target.value)}
+                />
+
+                <div className="flex gap-2 mb-2 items-center">
+                    <label className="text-white">Send to:</label>
+                    <select value={recipient} onChange={(e) => setRecipient(e.target.value as any)} className="text-black rounded p-2">
+                        <option value="driver">Drivers</option>
+                        <option value="passenger">Passengers</option>
+                        <option value="both">Both</option>
+                    </select>
+                </div>
+
+                <div className="flex gap-2 mb-2">
+                    <button onClick={() => {
+                        if (!navigator || !navigator.geolocation) {
+                            alert('Geolocation not available');
+                            return;
+                        }
+                        navigator.geolocation.getCurrentPosition((pos) => {
+                            const lat = pos.coords.latitude;
+                            const lng = pos.coords.longitude;
+                            setLocation({ lat, lng });
+                            setPickupLocation(`lat:${lat.toFixed(5)},lng:${lng.toFixed(5)}`);
+                        }, () => alert('Unable to fetch location'));
+                    }} className="px-3 py-2 bg-white text-black rounded">Use my location</button>
+                    <a target="_blank" rel="noreferrer" href={location ? `https://www.openstreetmap.org/?mlat=${location.lat}&mlon=${location.lng}#map=16/${location.lat}/${location.lng}` : "https://www.openstreetmap.org/"} className="px-3 py-2 bg-white text-black rounded">Open map</a>
+                </div>
+
+                {/* Map Preview */}
+                <div className="w-full h-40 bg-gray-300 rounded-lg overflow-hidden mb-2">
+                    {location ? (
+                        <iframe title="map-preview" src={`https://www.openstreetmap.org/export/embed.html?bbox=${location.lng-0.02}%2C${location.lat-0.01}%2C${location.lng+0.02}%2C${location.lat+0.01}&layer=mapnik&marker=${location.lat}%2C${location.lng}`} className="w-full h-full" />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-700">Map preview (set location to see)</div>
+                    )}
+                </div>
+
+                {/* Map Placeholder */}
+                <div className="w-full h-40 bg-gray-300 rounded-lg flex items-center justify-center text-gray-700 mb-2">
+                    Map will be shown here
                 </div>
 
                 <button
@@ -128,9 +252,9 @@ export default function PassengerParcelPage() {
                 <NavLink href="/passenger" tooltip="Home">
                     &lt;
                 </NavLink>
-                <NavLink href="/requests" tooltip="Requests">
-                    🔔
-                </NavLink>
+                <div className="nav-item text-3xl p-2">
+                    <Bell />
+                </div>
                 <NavLink href="/profile" tooltip="Profile">
                     👤
                 </NavLink>

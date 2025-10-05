@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useCallback } from "react";
 import Link from "next/link";
+import Bell from "../../../components/Bell";
 
 // --- Type Definitions ---
 type ParcelOption = "pickup" | "drop" | "";
@@ -128,9 +129,9 @@ export default function PassengerParcelPage() {
                 <NavLink href="/driver" tooltip="Home">
                     &lt;
                 </NavLink>
-                <NavLink href="/requests" tooltip="Requests">
-                    🔔
-                </NavLink>
+                <div className="nav-item text-3xl p-2">
+                    <Bell />
+                </div>
                 <NavLink href="/profile" tooltip="Profile">
                     👤
                 </NavLink>

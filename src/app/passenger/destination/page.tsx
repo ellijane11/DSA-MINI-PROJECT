@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
+import Bell from "../../../components/Bell";
 import { FaMapMarkerAlt, FaCalendarAlt, FaTaxi, FaBusAlt, FaCar } from 'react-icons/fa';
 import { addRequest } from "../../../lib/requests";
 // Note: You may need to install react-icons: npm install react-icons
@@ -266,9 +267,9 @@ export default function PassengerDestination() {
                 <NavLink href="/passenger" gradientStyle={btnGradient}>
                     &lt;
                 </NavLink>
-                <NavLink href="/requests" gradientStyle={btnGradient}>
-                    <span className="text-2xl"> 🔔</span>
-                </NavLink>
+                <div className="nav-item text-3xl p-2">
+                    <Bell />
+                </div>
                 <NavLink href="/passenger/map" gradientStyle={btnGradient}>
                     🗺️
                 </NavLink>

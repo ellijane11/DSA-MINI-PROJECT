@@ -3,8 +3,9 @@
 
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
+import Bell from "../../../components/Bell";
 import Link from "next/link";
-import { getPendingForDrivers, updateRequestStatus, ignoreRequest } from "../../../lib/requests";
+import { getPendingForDrivers, updateRequestStatus, ignoreRequest, addNotification, getAllRequests } from "../../../lib/requests";
 
 interface NavLinkProps {
     href: string;
@@ -121,6 +122,11 @@ export default function DriverRidesPage() {
 
     const accept = (id: string) => {
         updateRequestStatus(id, "accepted");
+        try {
+            const all = getAllRequests();
+            const req = all.find(x => x.id === id);
+            addNotification({ toId: req?.fromId, fromId: localStorage.getItem('current_user_email') || 'driver', title: 'Your request was accepted', body: `Request ${id} was accepted by a driver.` });
+        } catch (e) {}
         refreshPending();
         alert('You accepted this ride request (demo).');
     };
@@ -172,9 +178,9 @@ export default function DriverRidesPage() {
                 <NavLink href="/driver" tooltip="Home">
                     &lt;
                 </NavLink>
-                <NavLink href="/driver/requests" tooltip="Requests">
-                    🔔
-                </NavLink>
+                <div className="nav-item text-4xl p-2">
+                    <Bell />
+                </div>
                 <NavLink href="/driver/map" tooltip="Map">
                     🗺️
                 </NavLink>
