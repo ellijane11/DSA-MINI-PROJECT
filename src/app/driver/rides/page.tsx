@@ -29,7 +29,7 @@ export default function DriverRidesPage() {
     const [routeKey, setRouteKey] = useState<string>("");
     const [storedRoute, setStoredRoute] = useState<string>("");
 
-    const refreshPending = () => {
+    const refreshPending = (driverLocOverride?: { lat: number; lng: number } | null) => {
         const current = typeof window !== 'undefined' ? localStorage.getItem('current_user_email') || 'guest' : 'guest';
         const rk = routeKey || (storedRoute || undefined);
         let all = getPendingForDrivers(rk as any, current || undefined) || [];
@@ -39,7 +39,9 @@ export default function DriverRidesPage() {
             const active = activeRaw ? JSON.parse(activeRaw) : [];
             const myActive = active.filter((a: any) => a.driver === current).sort((a: any, b: any) => (b.id || 0) - (a.id || 0))[0];
             let driverLoc: { lat: number; lng: number } | null = null;
-            if (myActive && myActive.location) driverLoc = { lat: myActive.location.lat || 0, lng: myActive.location.lng || 0 };
+            if (driverLocOverride) {
+                driverLoc = driverLocOverride;
+            } else if (myActive && myActive.location) driverLoc = { lat: myActive.location.lat || 0, lng: myActive.location.lng || 0 };
             else {
                 const usersRaw = localStorage.getItem('local_users_v1');
                 const users = usersRaw ? JSON.parse(usersRaw) : [];
@@ -77,6 +79,43 @@ export default function DriverRidesPage() {
         }
         setPending(all || []);
     };
+
+        // watch driver's live position and refresh list as it changes
+        useEffect(() => {
+            if (typeof window === 'undefined' || !navigator || !navigator.geolocation) return;
+            let watchId: number | null = null;
+            try {
+                watchId = navigator.geolocation.watchPosition((pos) => {
+                    const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    // persist into local active_rides_v1 / local_users_v1 so other pages can read
+                    try {
+                        const cur = localStorage.getItem('current_user_email') || 'guest';
+                        // update active_rides_v1 latest entry for this driver
+                        const activeRaw = localStorage.getItem('active_rides_v1');
+                        const active = activeRaw ? JSON.parse(activeRaw) : [];
+                        const myIdx = active.findIndex((a: any) => a.driver === cur);
+                        if (myIdx !== -1) {
+                            active[myIdx].location = loc;
+                            localStorage.setItem('active_rides_v1', JSON.stringify(active));
+                        }
+                        const usersRaw = localStorage.getItem('local_users_v1');
+                        const users = usersRaw ? JSON.parse(usersRaw) : [];
+                        const uidx = users.findIndex((u: any) => (u.email || u.phone) === cur);
+                        if (uidx !== -1) {
+                            users[uidx].location = loc;
+                            localStorage.setItem('local_users_v1', JSON.stringify(users));
+                        }
+                    } catch (e) {}
+                    // refresh UI using this live location
+                    refreshPending({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                }, (err) => {
+                    // ignore errors silently
+                }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 } as PositionOptions);
+            } catch (e) {}
+            return () => {
+                try { if (watchId !== null && navigator && navigator.geolocation) navigator.geolocation.clearWatch(watchId); } catch (e) {}
+            };
+        }, []);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
@@ -126,6 +165,27 @@ export default function DriverRidesPage() {
             const all = getAllRequests();
             const req = all.find(x => x.id === id);
             addNotification({ toId: req?.fromId, fromId: localStorage.getItem('current_user_email') || 'driver', title: 'Your request was accepted', body: `Request ${id} was accepted by a driver.` });
+            // set this driver's active ride destination to the accepted request's destination
+            try {
+                const cur = localStorage.getItem('current_user_email') || 'guest';
+                const activeRaw = localStorage.getItem('active_rides_v1');
+                const active = activeRaw ? JSON.parse(activeRaw) : [];
+                const idx = active.findIndex((a: any) => a.driver === cur);
+                if (idx !== -1) {
+                    active[idx].destination = req?.destination || '';
+                    // optionally store the pickup as well
+                    active[idx].pickup = req?.pickup || active[idx].pickup;
+                    localStorage.setItem('active_rides_v1', JSON.stringify(active));
+                } else {
+                    // if no active entry exists, create one representing this accepted ride
+                    const usersRaw = localStorage.getItem('local_users_v1');
+                    const users = usersRaw ? JSON.parse(usersRaw) : [];
+                    const me = users.find((u: any) => (u.email || u.phone) === cur) || {};
+                    const loc = me.location || { lat: 0, lng: 0 };
+                    active.push({ id: `drv_${Date.now()}`, driver: cur, pickup: req?.pickup || '', destination: req?.destination || '', date: req?.date || '', time: req?.time || '', address: me.address || '', location: loc, vehicleType: req?.vehicleType || '', seats: req?.seats || 1 });
+                    localStorage.setItem('active_rides_v1', JSON.stringify(active));
+                }
+            } catch (e) {}
         } catch (e) {}
         refreshPending();
         alert('You accepted this ride request (demo).');

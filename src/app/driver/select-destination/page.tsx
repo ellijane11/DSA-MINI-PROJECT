@@ -7,7 +7,7 @@ import { FaMapMarkerAlt, FaCalendarAlt, FaCar } from 'react-icons/fa';
 export default function DriverSelectDestination() {
     const router = useRouter();
     const [pickup, setPickup] = useState("");
-    const [destination, setDestination] = useState("");
+    // drivers should NOT manually enter a destination; destination comes from accepted ride
     const [date, setDate] = useState("");
     const [time, setTime] = useState("");
     const [address, setAddress] = useState("");
@@ -16,11 +16,13 @@ export default function DriverSelectDestination() {
 
     const saveRoute = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
-        if (!pickup || !destination || !date) {
-            alert('Please fill pickup, destination and date');
+        if (!pickup || !date) {
+            alert('Please fill pickup and date');
             return;
         }
-        const routeKey = `${pickup}|${destination}|${date}`;
+        // keep same route format (pickup|destination|date) but leave destination empty so drivers
+        // will see requests based on pickup + date and won't pre-set a destination
+        const routeKey = `${pickup}||${date}`;
         try {
             const cur = typeof window !== 'undefined' ? localStorage.getItem('current_user_email') || 'guest' : 'guest';
             localStorage.setItem(`last_route_${cur}`, routeKey);
@@ -44,7 +46,8 @@ export default function DriverSelectDestination() {
             const activeKey = 'active_rides_v1';
             const raw = localStorage.getItem(activeKey);
             const list = raw ? JSON.parse(raw) : [];
-            const ride = { id: `drv_${Date.now()}`, driver: cur, pickup, destination, date, time, address, location: { lat: latNum, lng: lngNum }, vehicleType, seats };
+            // do NOT set a driver destination here; destination will be determined when accepting a ride
+            const ride = { id: `drv_${Date.now()}`, driver: cur, pickup, destination: '', date, time, address, location: { lat: latNum, lng: lngNum }, vehicleType, seats };
             list.push(ride);
             localStorage.setItem(activeKey, JSON.stringify(list));
             // update stored user location for proximity calculations
@@ -91,13 +94,7 @@ export default function DriverSelectDestination() {
                     </div>
                 </div>
 
-                <div className="mb-4">
-                    <label className="block text-sm font-semibold mb-1">Destination</label>
-                    <div className="relative">
-                        <input value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="Type destination" className="w-full pl-10 pr-4 py-2 rounded-lg border" />
-                        <FaCar className="absolute left-3 top-2 text-purple-600" />
-                    </div>
-                </div>
+                {/* Drivers shouldn't enter a destination manually. Destination will be set when a driver accepts a passenger request. */}
 
                 <div className="mb-4 grid grid-cols-2 gap-3">
                     <div>
@@ -115,7 +112,10 @@ export default function DriverSelectDestination() {
 
                 <div className="flex gap-3 mt-4">
                     <button type="submit" className="flex-1 py-2 rounded-lg bg-blue-600 text-white font-semibold">Save & View Requests</button>
-                    <button type="button" onClick={() => { setPickup(''); setDestination(''); setDate(''); setTime(''); }} className="flex-1 py-2 rounded-lg bg-gray-200">Clear</button>
+                    <button type="button" onClick={() => { setPickup(''); setDate(''); setTime(''); }} className="flex-1 py-2 rounded-lg bg-gray-200">Clear</button>
+                </div>
+                <div className="mt-3">
+                    <button type="button" onClick={() => router.push('/driver')} className="py-2 px-4 rounded-lg bg-white text-black">← Back</button>
                 </div>
             </form>
         </div>
