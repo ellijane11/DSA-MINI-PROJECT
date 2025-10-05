@@ -53,7 +53,7 @@ export function addRequest(data: Omit<RideRequest, "id" | "status" | "createdAt"
     const list = readAll();
     const r: RideRequest = {
         ...data,
-        id: `req_${Date.now()}`,
+        id: `req_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
         status: "pending",
         createdAt: new Date().toISOString(),
     };

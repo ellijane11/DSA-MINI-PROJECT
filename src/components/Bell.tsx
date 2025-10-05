@@ -21,8 +21,8 @@ export default function Bell() {
             if (!e || !e.key) { load(); return; }
             if (e.key === 'notifications_v1' || e.key === 'current_user_email') load();
         };
-        window.addEventListener('storage', onStorage as any);
-        return () => window.removeEventListener('storage', onStorage as any);
+        window.addEventListener('storage', onStorage as EventListener);
+        return () => window.removeEventListener('storage', onStorage as EventListener);
     }, []);
 
     useEffect(() => {
@@ -34,9 +34,14 @@ export default function Bell() {
         return () => document.removeEventListener('click', onDocClick);
     }, []);
 
-    const toggle = (e?: React.MouseEvent) => {
+    const toggle = (e?: React.MouseEvent<HTMLButtonElement>) => {
         e?.stopPropagation();
+        // open local dropdown
         setOpen(!open);
+        // also dispatch global requests panel opener so bell works from anywhere
+        try {
+            window.dispatchEvent(new CustomEvent('open-requests-panel'));
+        } catch (_err) {}
     };
 
     const markRead = (id: string) => {
